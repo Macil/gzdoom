@@ -158,6 +158,9 @@ public:
 	{
 		return 11025;	// Lies!
 	}
+	void UpdateDevice()
+	{
+	}
 	void StopChannel(FISoundChannel *chan)
 	{
 	}

@@ -40,6 +40,7 @@ public:
 	virtual unsigned int GetMSLength(SoundHandle sfx);
 	virtual unsigned int GetSampleLength(SoundHandle sfx);
 	virtual float GetOutputRate();
+	virtual void UpdateDevice();
 
 	// Streaming sounds.
 	virtual SoundStream *CreateStream(SoundStreamCallback callback, int buffbytes, int flags, int samplerate, void *userdata);
@@ -90,7 +91,7 @@ private:
         bool EXT_disconnect;
         bool SOFT_HRTF;
         bool SOFT_pause_device;
-		bool SOFT_output_limiter;
+		bool SOFT_reopen_device;
     } ALC;
     struct {
         bool EXT_source_distance_model;
@@ -152,6 +153,9 @@ private:
     void (ALC_APIENTRY*alcDevicePauseSOFT)(ALCdevice *device);
     void (ALC_APIENTRY*alcDeviceResumeSOFT)(ALCdevice *device);
 
+	ALCboolean (ALC_APIENTRY*alcReopenDeviceSOFT)(ALCdevice* device,
+		const ALCchar* deviceName, const ALCint* attribs);
+
     void BackgroundProc();
     void AddStream(OpenALSoundStream *stream);
     void RemoveStream(OpenALSoundStream *stream);
@@ -159,6 +163,8 @@ private:
 	void LoadReverb(const ReverbContainer *env);
 	void PurgeStoppedSources();
 	static FSoundChan *FindLowestChannel();
+
+	TArray<ALCint> createAlDeviceAttribs();
 
     std::thread StreamThread;
     std::mutex StreamLock;

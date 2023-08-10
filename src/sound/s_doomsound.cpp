@@ -1432,3 +1432,7 @@ CCMD(snd_reset)
 	S_SoundReset();
 }
 
+CCMD(snd_update_device)
+{
+	S_SoundUpdateDevice();
+}

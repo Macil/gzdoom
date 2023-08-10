@@ -1450,6 +1450,11 @@ void SoundEngine::Reset()
 	RestoreEvictedChannels();
 }
 
+void SoundEngine::UpdateDevice()
+{
+	GSnd->UpdateDevice();
+}
+
 
 //==========================================================================
 //
@@ -1713,6 +1718,11 @@ void S_SoundReset()
 	S_StopMusic(true);
 	soundEngine->Reset();
 	S_RestartMusic();
+}
+
+void S_SoundUpdateDevice()
+{
+	soundEngine->UpdateDevice();
 }
 
 //==========================================================================

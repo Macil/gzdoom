@@ -303,6 +303,7 @@ public:
 	int GetSoundPlayingInfo(int sourcetype, const void* source, FSoundID sound_id, int chan = -1);
 	void UnloadAllSounds();
 	void Reset();
+	void UpdateDevice();
 	void MarkUsed(FSoundID num);
 	void CacheMarkedSounds();
 	TArray<FSoundChan*> AllActiveChannels();

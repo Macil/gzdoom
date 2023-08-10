@@ -68,6 +68,7 @@ void A_PlaySound(AActor *self, int soundid, int channel, double volume, int loop
 void A_StartSound(AActor* self, int soundid, int channel, int flags, double volume, double attenuation,  double pitch, double startTime = 0.);
 static void S_SetListener(AActor *listenactor);
 void S_SoundReset();
+void S_SoundUpdateDevice();
 void S_ResumeSound(bool state);
 void S_PauseSound(bool state1, bool state);
 void S_NoiseDebug();

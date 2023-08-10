@@ -112,6 +112,7 @@ public:
 	virtual unsigned int GetMSLength(SoundHandle sfx) = 0;	// Gets the length of a sound at its default frequency
 	virtual unsigned int GetSampleLength(SoundHandle sfx) = 0;	// Gets the length of a sound at its default frequency
 	virtual float GetOutputRate() = 0;
+	virtual void UpdateDevice() = 0;
 
 	// Streaming sounds.
 	virtual SoundStream *CreateStream (SoundStreamCallback callback, int buffbytes, int flags, int samplerate, void *userdata) = 0;
@@ -178,5 +179,6 @@ extern ReverbContainer *DefaultEnvironments[26];
 
 bool IsOpenALPresent();
 void S_SoundReset();
+void S_SoundUpdateDevice();
 
 #endif

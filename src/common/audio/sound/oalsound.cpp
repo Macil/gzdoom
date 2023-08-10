@@ -569,6 +569,35 @@ ALCdevice *OpenALSoundRenderer::InitDevice()
 	return device;
 }
 
+TArray<ALCint> OpenALSoundRenderer::createAlDeviceAttribs()
+{
+	TArray<ALCint> attribs;
+	if(*snd_samplerate > 0)
+	{
+		attribs.Push(ALC_FREQUENCY);
+		attribs.Push(*snd_samplerate);
+	}
+	// Make sure one source is capable of stereo output with the rest doing
+	// mono, without running out of voices
+	attribs.Push(ALC_MONO_SOURCES);
+	attribs.Push(max<ALCint>(snd_channels, 2) - 1);
+	attribs.Push(ALC_STEREO_SOURCES);
+	attribs.Push(1);
+	if(ALC.SOFT_HRTF)
+	{
+		attribs.Push(ALC_HRTF_SOFT);
+		if(*snd_hrtf == 0)
+			attribs.Push(ALC_FALSE);
+		else if(*snd_hrtf > 0)
+			attribs.Push(ALC_TRUE);
+		else
+			attribs.Push(ALC_DONT_CARE_SOFT);
+	}
+	// Other attribs..?
+	attribs.Push(0);
+	return attribs;
+}
+
 
 template<typename T>
 static void LoadALFunc(const char *name, T *x)
@@ -598,6 +627,7 @@ OpenALSoundRenderer::OpenALSoundRenderer()
 	ALC.EXT_disconnect = !!alcIsExtensionPresent(Device, "ALC_EXT_disconnect");
 	ALC.SOFT_HRTF = !!alcIsExtensionPresent(Device, "ALC_SOFT_HRTF");
 	ALC.SOFT_pause_device = !!alcIsExtensionPresent(Device, "ALC_SOFT_pause_device");
+	ALC.SOFT_reopen_device = !!alcIsExtensionPresent(Device, "ALC_SOFT_reopen_device");
 
 	const ALCchar *current = NULL;
 	if(alcIsExtensionPresent(Device, "ALC_ENUMERATE_ALL_EXT"))
@@ -612,30 +642,7 @@ OpenALSoundRenderer::OpenALSoundRenderer()
 	DPrintf(DMSG_SPAMMY, "  ALC Version: " TEXTCOLOR_BLUE"%d.%d\n", major, minor);
 	DPrintf(DMSG_SPAMMY, "  ALC Extensions: " TEXTCOLOR_ORANGE"%s\n", alcGetString(Device, ALC_EXTENSIONS));
 
-	TArray<ALCint> attribs;
-	if(*snd_samplerate > 0)
-	{
-		attribs.Push(ALC_FREQUENCY);
-		attribs.Push(*snd_samplerate);
-	}
-	// Make sure one source is capable of stereo output with the rest doing
-	// mono, without running out of voices
-	attribs.Push(ALC_MONO_SOURCES);
-	attribs.Push(max<ALCint>(snd_channels, 2) - 1);
-	attribs.Push(ALC_STEREO_SOURCES);
-	attribs.Push(1);
-	if(ALC.SOFT_HRTF)
-	{
-		attribs.Push(ALC_HRTF_SOFT);
-		if(*snd_hrtf == 0)
-			attribs.Push(ALC_FALSE);
-		else if(*snd_hrtf > 0)
-			attribs.Push(ALC_TRUE);
-		else
-			attribs.Push(ALC_DONT_CARE_SOFT);
-	}
-	// Other attribs..?
-	attribs.Push(0);
+	TArray<ALCint> attribs = createAlDeviceAttribs();
 
 	Context = alcCreateContext(Device, &attribs[0]);
 	if(!Context || alcMakeContextCurrent(Context) == ALC_FALSE)
@@ -704,6 +711,19 @@ OpenALSoundRenderer::OpenALSoundRenderer()
 	{
 		LOAD_DEV_FUNC(Device, alcDevicePauseSOFT);
 		LOAD_DEV_FUNC(Device, alcDeviceResumeSOFT);
+	}
+
+	if(ALC.SOFT_reopen_device)
+	{
+		LOAD_DEV_FUNC(Device, alcReopenDeviceSOFT);
+
+		// TODO stick this extension check in a property so it can be used in the TODO
+		if(alIsExtensionPresent("AL_SOFTX_hold_on_disconnect"))
+		{
+			// Prevent audio device disconnection from halting sounds so there's no interruption when we switch devices.
+			// https://github.com/kcat/openal-soft/issues/533
+			alDisable(0x19AB /* AL_STOP_SOURCES_ON_DISCONNECT_SOFT */);
+		}
 	}
 
 	ALenum err = getALError();
@@ -1024,6 +1044,18 @@ float OpenALSoundRenderer::GetOutputRate()
 	ALCint rate = 44100; // Default, just in case
 	alcGetIntegerv(Device, ALC_FREQUENCY, 1, &rate);
 	return (float)rate;
+}
+
+void OpenALSoundRenderer::UpdateDevice()
+{
+	if(!ALC.SOFT_reopen_device)
+	{
+		Printf("Switching audio devices is not supported (ALC_SOFT_reopen_device extension not present)");
+		return;
+	}
+
+	TArray<ALCint> attribs = createAlDeviceAttribs();
+	alcReopenDeviceSOFT(Device, NULL, &attribs[0]);
 }
 
 
@@ -1824,6 +1856,7 @@ void OpenALSoundRenderer::UpdateSounds()
 		if(connected == ALC_FALSE)
 		{
 			Printf("Sound device disconnected; restarting...\n");
+			// TODO if we're using reopen+AL_SOFTX_hold_on_disconnect then use reopen, not reset here
 			S_SoundReset();
 			return;
 		}

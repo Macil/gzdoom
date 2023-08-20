@@ -136,6 +136,97 @@ void I_SetIWADInfo()
 	mainwindow.UpdateLayout();
 }
 
+#include <winnt.h>
+#include <mmdeviceapi.h>
+#include "oalsound.h"
+
+class NotificationClient : public IMMNotificationClient {
+	LONG _cRef;
+
+public:
+	NotificationClient() :
+		_cRef(1)
+	{
+	}
+
+	// IUnknown methods -- AddRef, Release, and QueryInterface
+
+	ULONG STDMETHODCALLTYPE AddRef() noexcept override
+	{
+		return InterlockedIncrement(&_cRef);
+	}
+
+	ULONG STDMETHODCALLTYPE Release() noexcept override
+	{
+		ULONG ulRef = InterlockedDecrement(&_cRef);
+		if (0 == ulRef)
+		{
+			delete this;
+		}
+		return ulRef;
+	}
+
+	HRESULT STDMETHODCALLTYPE QueryInterface(
+		REFIID riid, VOID** ppvInterface) noexcept override
+	{
+		if (IID_IUnknown == riid)
+		{
+			AddRef();
+			*ppvInterface = (IUnknown*)this;
+		}
+		else if (__uuidof(IMMNotificationClient) == riid)
+		{
+			AddRef();
+			*ppvInterface = (IMMNotificationClient*)this;
+		}
+		else
+		{
+			*ppvInterface = NULL;
+			return E_NOINTERFACE;
+		}
+		return S_OK;
+	}
+
+	// Callback methods for device-event notifications.
+
+	HRESULT STDMETHODCALLTYPE OnDefaultDeviceChanged(
+		EDataFlow flow, ERole role,
+		LPCWSTR pwstrDeviceId) noexcept override
+	{
+		// We only care about default speaker changes, not default mic changes.
+		// OpenAL uses role eMultimedia, not eConsole or eCommunications.
+		if (flow == eRender && role == eMultimedia)
+		{
+			DefaultSoundDeviceChanged.store(true);
+		}
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE OnDeviceAdded(LPCWSTR pwstrDeviceId) noexcept override
+	{
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE OnDeviceRemoved(LPCWSTR pwstrDeviceId) noexcept override
+	{
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE OnDeviceStateChanged(
+		LPCWSTR pwstrDeviceId,
+		DWORD dwNewState) noexcept override
+	{
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE OnPropertyValueChanged(
+		LPCWSTR pwstrDeviceId,
+		const PROPERTYKEY key) noexcept override
+	{
+		return S_OK;
+	}
+};
+
 //==========================================================================
 //
 // DoMain
@@ -265,8 +356,28 @@ int DoMain (HINSTANCE hInstance)
 	CoInitialize (NULL);
 	atexit ([](){ CoUninitialize(); }); // beware of calling convention.
 
+	// Register sound device change callback.
+	// TODO use OpenAL ALC_SOFTX_system_events extension instead.
+	IMMDeviceEnumerator* pEnumerator;
+	NotificationClient* notificationClient = nullptr;
+	HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
+	if (SUCCEEDED(hr)) {
+		// Register for device change notifications
+		notificationClient = new NotificationClient();
+		pEnumerator->RegisterEndpointNotificationCallback(notificationClient);
+	}
+
 	int ret = GameMain ();
 	mainwindow.CheckForRestart();
+
+	// Unregister sound device change callback.
+	if (pEnumerator) {
+		if (notificationClient) {
+			pEnumerator->UnregisterEndpointNotificationCallback(notificationClient);
+			notificationClient->Release();
+		}
+		pEnumerator->Release();
+	}
 
 	DestroyCustomCursor();
 	if (ret == 1337) // special exit code for 'norun'.

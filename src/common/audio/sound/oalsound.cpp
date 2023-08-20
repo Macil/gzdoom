@@ -101,6 +101,8 @@ bool IsOpenALPresent()
 
 
 
+std::atomic<bool> DefaultSoundDeviceChanged(false);
+
 ReverbContainer *ForcedEnvironment;
 
 
@@ -543,6 +545,7 @@ static float GetRolloff(const FRolloffInfo *rolloff, float distance)
 
 ALCdevice *OpenALSoundRenderer::InitDevice()
 {
+	UsingDefaultDevice = false;
 	ALCdevice *device = NULL;
 	if (IsOpenALPresent())
 	{
@@ -555,6 +558,7 @@ ALCdevice *OpenALSoundRenderer::InitDevice()
 
 		if(!device)
 		{
+			UsingDefaultDevice = true;
 			device = alcOpenDevice(NULL);
 			if(!device)
 			{
@@ -1824,6 +1828,21 @@ void OpenALSoundRenderer::UpdateSounds()
 		if(connected == ALC_FALSE)
 		{
 			Printf("Sound device disconnected; restarting...\n");
+
+			// If an event happened simultaneously, ignore it so we don't handle it redundantly immediately after this.
+			DefaultSoundDeviceChanged.store(false);
+
+			S_SoundReset();
+			return;
+		}
+	}
+
+	if (DefaultSoundDeviceChanged.load())
+	{
+		DefaultSoundDeviceChanged.store(false);
+		if (UsingDefaultDevice)
+		{
+			Printf("Default sound device changed; restarting sound...\n");
 			S_SoundReset();
 			return;
 		}

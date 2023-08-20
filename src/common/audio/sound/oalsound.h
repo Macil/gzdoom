@@ -24,6 +24,8 @@
 #include "alext.h"
 
 
+extern std::atomic<bool> DefaultSoundDeviceChanged;
+
 class OpenALSoundStream;
 
 class OpenALSoundRenderer : public SoundRenderer
@@ -167,6 +169,8 @@ private:
 
 	ALCdevice *Device;
 	ALCcontext *Context;
+
+	bool UsingDefaultDevice;
 
 	TArray<ALuint> Sources;
 

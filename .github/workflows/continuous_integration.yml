@@ -97,11 +97,11 @@ jobs:
         cd build
         mkdir package
         if [[ "${{ runner.os }}" == 'Windows' ]]; then
-          cp ${{ matrix.config.build_type }}/gzdoom.exe ${{ matrix.config.build_type }}/*.pk3 package
+          cp -r ${{ matrix.config.build_type }}/{gzdoom.exe,*.pk3,fm_banks,soundfonts} package
         elif [[ "${{ runner.os }}" == 'macOS' ]]; then
           cp -r gzdoom.app package
         elif [[ "${{ runner.os }}" == 'Linux' ]]; then
-          cp gzdoom *.pk3 package
+          cp -r gzdoom *.pk3 fm_banks soundfonts package
         fi
 
     - name: Upload Package

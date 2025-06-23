@@ -43,6 +43,7 @@
 #include "vm.h"
 #include "gamestate.h"
 #include "i_interface.h"
+#include "external_com.h"
 
 int eventhead;
 int eventtail;
@@ -105,6 +106,8 @@ void D_ProcessEvents (void)
 	{
 		D_PostEvent(ev);
 	}
+
+	EC_ProcessReceivedEvents();
 }
 
 //==========================================================================

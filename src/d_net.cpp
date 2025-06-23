@@ -72,6 +72,7 @@
 #include "d_main.h"
 #include "i_interface.h"
 #include "savegamemanager.h"
+#include "external_com.h"
 
 EXTERN_CVAR (Int, disableautosave)
 EXTERN_CVAR (Int, autosavecount)
@@ -249,6 +250,11 @@ static struct TicSpecial
 			GetMoreSpace (streamoffs + needed);
 
 		streamoffs += needed;
+	}
+
+	size_t GetStreamOffset()
+	{
+		return streamoffs;
 	}
 
 	void NewMakeTic ()
@@ -2121,6 +2127,11 @@ void Net_WriteBytes (const uint8_t *block, int len)
 		specials << *block++;
 }
 
+size_t Net_GetStreamOffset()
+{
+	return specials.GetStreamOffset();
+}
+
 //==========================================================================
 //
 // Dynamic buffer interface
@@ -2222,10 +2233,14 @@ void Net_DoCommand (int type, uint8_t **stream, int player)
 				if (who & 2)
 				{
 					Printf (PRINT_CHAT, TEXTCOLOR_BOLD "* %s" TEXTCOLOR_BOLD "%s" TEXTCOLOR_BOLD "\n", name, s);
+					if (!demoplayback)
+						EC_BroadcastChatMessage(name, s);
 				}
 				else
 				{
 					Printf (PRINT_CHAT, "%s" TEXTCOLOR_CHAT ": %s" TEXTCOLOR_CHAT "\n", name, s);
+					if (!demoplayback)
+						EC_BroadcastChatMessage(name, s);
 				}
 				S_Sound (CHAN_VOICE, CHANF_UI, gameinfo.chatSound, 1, ATTN_NONE);
 			}
@@ -2773,6 +2788,11 @@ void Net_DoCommand (int type, uint8_t **stream, int player)
 				buffer.Grow(size);
 				for (unsigned int i = 0u; i < size; ++i)
 					buffer.Push(ReadInt8(stream));
+			}
+
+			if (!demoplayback && strncmp(cmd.GetChars(), externalOutCommandPrefix, strlen(externalOutCommandPrefix)) == 0)
+			{
+				EC_BroadcastNetworkCommand(cmd.GetChars(), size, (const char*) buffer.Data());
 			}
 
 			FNetworkCommand netCmd = { player, cmd, buffer };

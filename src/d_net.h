@@ -73,6 +73,8 @@ void Net_WriteDouble(double);
 void Net_WriteString (const char *);
 void Net_WriteBytes (const uint8_t *, int len);
 
+size_t Net_GetStreamOffset ();
+
 void Net_DoCommand (int type, uint8_t **stream, int player);
 void Net_SkipCommand (int type, uint8_t **stream);
 

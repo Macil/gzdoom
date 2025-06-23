@@ -118,6 +118,7 @@
 #include "screenjob.h"
 #include "startscreen.h"
 #include "shiftstate.h"
+#include "external_com.h"
 
 #ifdef __unix__
 #include "i_system.h"  // for SHARE_DIR
@@ -3693,6 +3694,8 @@ static int D_DoomMain_Internal (void)
 	extern void D_ConfirmSendStats();
 	D_ConfirmSendStats();
 
+	EC_Init();
+
 	FString basewad = wad;
 
 	FString optionalwad = BaseFileSearch(OPTIONALWAD, NULL, true, GameConfig);
@@ -3799,6 +3802,7 @@ int GameMain()
 	}
 	// Unless something really bad happened, the game should only exit through this single point in the code.
 	// No more 'exit', please.
+	EC_Shutdown();
 	D_Cleanup();
 	CloseNetwork();
 	GC::FinalGC = true;

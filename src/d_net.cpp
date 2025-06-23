@@ -40,6 +40,7 @@
 #include "d_net.h"
 #include "d_netinf.h"
 #include "events.h"
+#include "external_com.h"
 #include "g_game.h"
 #include "g_levellocals.h"
 #include "gameconfigfile.h"
@@ -283,6 +284,11 @@ public:
 		CurrentClientTic = tic;
 		CurrentStream = Streams[tic % BACKUPTICS].Stream;
 		CurrentSize = 0;
+	}
+
+	size_t GetCurrentSize()
+	{
+		return CurrentSize;
 	}
 
 	NetEventData& operator<<(uint8_t it)
@@ -2329,6 +2335,11 @@ void Net_WriteBytes(const uint8_t *block, int len)
 		NetEvents << *block++;
 }
 
+size_t Net_GetBufferCurrentSize()
+{
+	return NetEvents.GetCurrentSize();
+}
+
 //==========================================================================
 //
 // Dynamic buffer interface
@@ -2439,16 +2450,20 @@ void Net_DoCommand(int cmd, TArrayView<uint8_t>& stream, int player)
 			constexpr int MSG_BOLD = 2;
 			if (!(who & MSG_TEAM))
 			{
+				if (!demoplayback)
+					EC_BroadcastChatMessage(name, s);
+
 				if (cl_showchat < CHAT_GLOBAL)
 					break;
 
 				// Said to everyone
 				if (deathmatch && teamplay)
 					Printf(PRINT_CHAT, "(All) ");
-				if ((who & MSG_BOLD) && !cl_noboldchat)
+				if ((who & MSG_BOLD) && !cl_noboldchat) {
 					Printf(PRINT_CHAT, TEXTCOLOR_BOLD "* %s [%d]" TEXTCOLOR_BOLD "%s" TEXTCOLOR_BOLD "\n", name, player, s);
-				else
+				} else {
 					Printf(PRINT_CHAT, "%s [%d]" TEXTCOLOR_CHAT ": %s" TEXTCOLOR_CHAT "\n", name, player, s);
+				}
 
 				if (!cl_nochatsound)
 					S_Sound(CHAN_VOICE, CHANF_UI, gameinfo.chatSound, 1.0f, ATTN_NONE);
@@ -2977,6 +2992,11 @@ void Net_DoCommand(int cmd, TArrayView<uint8_t>& stream, int player)
 				buffer.Grow(size);
 				for (unsigned int i = 0u; i < size; ++i)
 					buffer.Push(ReadInt8(stream));
+			}
+
+			if (!demoplayback && strncmp(cmd.GetChars(), externalOutCommandPrefix, strlen(externalOutCommandPrefix)) == 0)
+			{
+				EC_BroadcastNetworkCommand(cmd.GetChars(), size, (const char*) buffer.Data());
 			}
 
 			FNetworkCommand netCmd = { player, cmd, buffer };

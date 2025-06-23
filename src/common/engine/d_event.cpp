@@ -38,6 +38,7 @@
 #include "c_cvars.h"
 #include "d_eventbase.h"
 #include "d_gui.h"
+#include "external_com.h"
 #include "gamestate.h"
 #include "i_interface.h"
 #include "keydef.h"
@@ -120,6 +121,8 @@ void D_ProcessEvents (void)
 	{
 		D_PostEvent(ev);
 	}
+
+	EC_ProcessReceivedEvents();
 }
 
 //==========================================================================

@@ -774,6 +774,7 @@ endif()
 set (FASTMATH_SOURCES ${FASTMATH_SOURCES})
 
 set (PCH_SOURCES
+	external_com.cpp
 	common/thirdparty/richpresence.cpp
 	am_map.cpp
 	playsim/bots/b_bot.cpp
@@ -1212,6 +1213,7 @@ set( GAME_SOURCES
 	${SYSTEM_SOURCES}
 	${FASTMATH_SOURCES}
 	${PCH_SOURCES}
+	tinyosc.c
 	common/utility/x86.cpp
 	common/thirdparty/strnatcmp.c
 	common/thirdparty/utf8proc/utf8proc.c

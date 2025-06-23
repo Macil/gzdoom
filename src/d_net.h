@@ -153,6 +153,8 @@ void Net_WriteBytes(const uint8_t *, int len);
 void Net_DoCommand(int cmd, TArrayView<uint8_t>& stream, int player);
 void Net_SkipCommand(int cmd, TArrayView<uint8_t>& stream);
 
+size_t Net_GetBufferCurrentSize();
+
 bool Net_CheckCutsceneReady();
 void Net_AdvanceCutscene();
 void Net_ResetCommands(bool midTic);

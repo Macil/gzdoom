@@ -99,6 +99,7 @@ jobs:
         mkdir package
         if [[ "${{ runner.os }}" == 'Windows' ]]; then
           cp ${{ matrix.config.build_type }}/gzdoom.exe ${{ matrix.config.build_type }}/*.pk3 ${{ matrix.config.build_type }}/zmusic.dll package
+          cp -r ${{ matrix.config.build_type }}/{fm_banks,soundfonts} package
         elif [[ "${{ runner.os }}" == 'macOS' ]]; then
           if [[ "${{ matrix.config.build_type }}" != 'Release' ]]; then
             mv ${{ matrix.config.build_type }}/gzdoom.app gzdoom.app
@@ -106,6 +107,7 @@ jobs:
           cp -r gzdoom.app package
         elif [[ "${{ runner.os }}" == 'Linux' ]]; then
           cp gzdoom *.pk3 libzmusic.so* package
+          cp -r fm_banks soundfonts package
         fi
 
     - name: Upload Package

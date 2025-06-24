@@ -98,6 +98,12 @@ jobs:
         cd build
         mkdir package
         if [[ "${{ runner.os }}" == 'Windows' ]]; then
+          # Get DLLs from previous official release
+          # TODO where's the proper place to get these instead?
+          curl -Lfo gzdoom.zip "https://github.com/ZDoom/gzdoom/releases/download/g4.14.2/gzdoom-4-14-2-windows.zip"
+          unzip gzdoom.zip -d gzdoom-release/
+          cp gzdoom-release/{*.dll,licenses.zip} package
+
           cp ${{ matrix.config.build_type }}/gzdoom.exe ${{ matrix.config.build_type }}/*.pk3 ${{ matrix.config.build_type }}/zmusic.dll package
           cp -r ${{ matrix.config.build_type }}/{fm_banks,soundfonts} package
         elif [[ "${{ runner.os }}" == 'macOS' ]]; then

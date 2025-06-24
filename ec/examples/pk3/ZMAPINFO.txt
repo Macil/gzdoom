@@ -1,0 +1,9 @@
+map MAP01 "EC Example"
+{
+    Author = "Macil"
+    Sky1 = "SKY1"
+    music = "$MUSIC_RUNNIN"
+    Next = "EndTitle"
+    EventHandlers = "AnnouncerEventHandler", "LiveScreenEventHandler"
+	StrictMonsterActivation
+}

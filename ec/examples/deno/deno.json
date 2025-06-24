@@ -1,0 +1,11 @@
+{
+  "tasks": {
+  },
+  "imports": {
+    "@std/assert": "jsr:@std/assert@1",
+    "@twurple/auth": "npm:@twurple/auth@^7.3.0",
+    "@twurple/chat": "npm:@twurple/chat@^7.3.0",
+    "osc-min": "npm:osc-min@^2.1.2"
+  },
+  "unstable": ["net"]
+}

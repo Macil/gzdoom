@@ -4,7 +4,7 @@ This is an experimental fork of GZDoom that allows external programs to communic
 
 Builds are not provided currently, but you can build it yourself by following the build instructions further below.
 
-Future versions of this fork will probably switch away from OSC to a better protocol (probably websockets), but for now, OSC is used because it is easy to implement. (OSC doesn't allow multiple clients to connect and listen to events, doesn't allow clients to even tell if they're connected, doesn't have guaranteed or in-order delivery of events, etc.)
+Future versions of this fork will probably switch away from OSC to a better protocol, but for now, OSC is used because it is easy to implement. (OSC doesn't allow multiple clients to connect and listen to events, doesn't allow clients to even tell if they're connected, doesn't have guaranteed or in-order delivery of events, etc. A connection-oriented protocol would be much better. Also, instead of listening to a local port by default, which isn't a secure default because it could be addressed by other unprivileged users on the same system, I think it would be best to have GZDoom listen on a Unix domain socket or named pipe.)
 
 ## Example Usage
 

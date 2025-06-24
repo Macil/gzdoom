@@ -1,0 +1,4 @@
+*.dbs
+*.backup*
+*.autosave*
+*.bak

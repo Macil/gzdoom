@@ -1,0 +1,7 @@
+// brightmaps don't work on canvas textures currently but they're configured here
+// in case that bug is fixed in the future.
+
+brightmap texture MSCRNA
+{
+    map "brightmaps/screens/MSCRNb256w.webp"
+}

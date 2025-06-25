@@ -91,11 +91,11 @@ void EC_Init()
 		return;
 	}
 
-	u_long trueval = 1;
 #ifndef __sun
+	u_long trueval = 1;
 	ioctlsocket(socketFd, FIONBIO, &trueval);
 #else
-	fcntl(socketFd, F_SETFL, trueval | O_NONBLOCK);
+	fcntl(socketFd, F_SETFL, O_NONBLOCK);
 #endif
 
 	Printf("OSC: Listening on %s:%d UDP\n", LISTEN_IP, LISTEN_PORT);
@@ -143,7 +143,7 @@ static void EC_ProcessReceivedOSCEvent(tosc_message& osc)
 		Net_WriteInt8(DEM_ZSC_CMD);
 		Net_WriteString(cmd);
 		Net_WriteInt16(n);
-		Net_WriteBytes((const uint8_t*) b, n);
+		Net_WriteBytes((const uint8_t*)b, n);
 	}
 }
 

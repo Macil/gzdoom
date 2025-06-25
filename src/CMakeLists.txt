@@ -1213,9 +1213,9 @@ set( GAME_SOURCES
 	${SYSTEM_SOURCES}
 	${FASTMATH_SOURCES}
 	${PCH_SOURCES}
-	tinyosc.c
 	common/utility/x86.cpp
 	common/thirdparty/strnatcmp.c
+	common/thirdparty/tinyosc.c
 	common/thirdparty/utf8proc/utf8proc.c
 	common/thirdparty/stb/stb_sprintf.c
 	common/utility/zstring.cpp

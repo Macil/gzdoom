@@ -22,7 +22,7 @@
 #include <winsock2.h>
 #define tosc_strncpy(_dst, _src, _len) strncpy_s(_dst, _len, _src, _TRUNCATE)
 
-// macil edit: define htonll and ntohll for Windows
+// gzdoom edit: define htonll and ntohll for Windows
 #ifndef htonll
 #if __BIG_ENDIAN__
 #define htonll(x)   (x)

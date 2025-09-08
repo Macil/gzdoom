@@ -246,7 +246,7 @@ const FName * Joy_GetMapping(const FName identifier)
 
 	auto warn = [&identifier]() {
 		RumbleMissed.Push(identifier);
-		Printf(DMSG_WARNING, "Unknown rumble mapping '%s'\n", identifier.GetChars());
+		DPrintf(DMSG_WARNING, "Unknown rumble mapping '%s'\n", identifier.GetChars());
 	};
 
 	if (!mapping && identifier != "")
